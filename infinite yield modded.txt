@@ -12371,20 +12371,22 @@ coroutine.wrap(function()
 	minimizeHolder()
 end)()
 
-if getretroplace() == 1 then
-	local function onplayeraddednotify(p)
-		if isplayerowner(p) then
-			notifyadmin(p)
+pcall(function()
+	if getretroplace() == 1 then
+		local function onplayeraddednotify(p)
+			if isplayerowner(p) then
+				notifyadmin(p)
+			end
+			if isplayeradmin(p) then
+				notifyretroadmin(p)
+			end
 		end
-		if isplayeradmin(p) then
-			notifyretroadmin(p)
+		for i,v in pairs(Players:GetPlayers()) do
+			onplayeraddednotify(v)
 		end
+		Players.PlayerAdded:Connect(onplayeraddednotify)
 	end
-	for i,v in pairs(Players:GetPlayers()) do
-		onplayeraddednotify(v)
-	end
-	Players.PlayerAdded:Connect(onplayeraddednotify)
-end
+end)
 
 
 addcmd("retroteleport",{},function(args,speaker)
