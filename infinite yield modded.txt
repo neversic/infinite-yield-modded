@@ -1958,7 +1958,7 @@ function teleporttoplace(id)
 	TeleportService:Teleport(5846386835,Players.LocalPlayer,{PlaceId=id})
 end
 function getretroplaceid()
-	return ReplicatedStorage.GameInfo.GameId
+	return ReplicatedStorage.GameInfo.GameId.Value
 end
 function isplayerowner(p)
 	if p.UserId == ReplicatedStorage.GameInfo.GameOwnerId.Value or ReplicatedStorage.GameInfo.GameOwnerId:FindFirstChild(tostring(p.UserId)) then
