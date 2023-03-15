@@ -12546,10 +12546,10 @@ addcmd("destroyparts",{},function(args)
 		local char = Player.Character
 		local backpack = Player.Backpack
 		if char then
-			tool = char:FindFirstChild("Destroy") or char:FindFirstChild("Hammer")
+			tool = char:FindFirstChild("Delete") or char:FindFirstChild("Hammer")
 		end
 		if not tool then
-			tool = backpack:FindFirstChild("Destroy") or backpack:FindFirstChild("Hammer")
+			tool = backpack:FindFirstChild("Delete") or backpack:FindFirstChild("Hammer")
 		end
 		if tool then
 			local r = tool.MouseDown
