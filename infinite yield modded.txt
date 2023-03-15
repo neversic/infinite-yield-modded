@@ -12500,7 +12500,7 @@ function clone(r1,r2,clonetype,p)
 end
 addcmd("cloneparts",{},function(args,speaker)
 	if getretroplace() == 1 then
-		local clonetype = tonumber(args[1])
+		local clonetype = tonumber(args[1]) or 0
 		clonetype = math.clamp(math.floor(clonetype),0,2)
 		local tool = nil
 		local Player = Players.LocalPlayer
