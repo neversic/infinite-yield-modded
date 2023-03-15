@@ -4693,6 +4693,8 @@ CMDs[#CMDs + 1] = {NAME = 'retroplaceid', DESC = 'Notifies retro place id.'}
 --CMDs[#CMDs + 1] = {NAME = 'retrobanbypass', DESC = 'Bypasses a retrostudio ban (only if the ui does not load on join)'} patched
 CMDs[#CMDs + 1] = {NAME = 'grabbloxycola', DESC = 'Grabs the specified amount of bloxy colas.'}
 CMDs[#CMDs + 1] = {NAME = 'autodropbloxycola', DESC = 'Automatically drops bloxy colas.'}
+CMDs[#CMDs + 1] = {NAME = 'cloneparts', DESC = 'Clones all unlocked parts in the workspace. Need a clone tool (From Toolbox or Btools Command)'}
+CMDs[#CMDs + 1] = {NAME = 'destroyparts', DESC = 'Destroys all unlocked parts in the workspace. Need a destroy tool (From Toolbox or Btools Command)'}
 
 
 wait()
@@ -12480,5 +12482,85 @@ addcmd("autodropbloxycola",{"autobloxycola"},function(args,speaker)
 		Player.Backpack.ChildAdded:Connect(function(gear)
 			ongearadded(gear)
 		end)
+	end
+end)
+function clone(r1,r2,clonetype,p)
+	spawn(function()
+		if p:IsA("BasePart") and p.Locked == false then
+			if clonetype == 1 and p.Anchored == true then
+				return
+			end
+			if clonetype == 2 and p.Anchored == false then
+				return
+			end
+			r1:InvokeServer(p)
+			r2:FireServer()
+		end
+	end)
+end
+addcmd("cloneparts",{},function(args,speaker)
+	if getretroplace() == 1 then
+		local clonetype = tonumber(args[1])
+		clonetype = math.clamp(math.floor(clonetype),0,2)
+		local tool = nil
+		local Player = Players.LocalPlayer
+		local char = Player.Character
+		local backpack = Player.Backpack
+		if char then
+			tool = char:FindFirstChild("Clone") or char:FindFirstChild("CloneTool")
+		end
+		if not tool then
+			tool = backpack:FindFirstChild("Clone") or backpack:FindFirstChild("CloneTool")
+		end
+		if tool then
+			local r1 = tool.MouseDown
+			local r2 = tool.MouseUp
+			if clonetype == 0 then
+				notify("Notification","Cloning parts.")
+			end
+			if clonetype == 1 then
+				notify("Notification","Cloning unanchored parts.")
+			end
+			if clonetype == 2 then
+				notify("Notification","Cloning anchored parts.")
+			end
+			for i,v in pairs(game:GetDescendants()) do
+				clone(r1,r2,clonetype,v)
+			end
+		else
+			notify("Error","No clone tool found.")
+		end
+	end
+end)
+function destroy(r,p)
+	spawn(function()
+		if r and p and p:IsA("BasePart") and not p.Locked then
+			r:FireServer(p)
+		end
+	end)
+end
+addcmd("destroyparts",{},function(args)
+	if getretroplace() == 1 then
+		local clonetype = tonumber(args[1])
+		clonetype = math.clamp(math.floor(clonetype),0,2)
+		local tool = nil
+		local Player = Players.LocalPlayer
+		local char = Player.Character
+		local backpack = Player.Backpack
+		if char then
+			tool = char:FindFirstChild("Clone") or char:FindFirstChild("CloneTool")
+		end
+		if not tool then
+			tool = backpack:FindFirstChild("Clone") or backpack:FindFirstChild("CloneTool")
+		end
+		if tool then
+			local r = tool.MouseDown
+			notify("Notification","Destroying parts.")
+			for i,v in pairs(game:GetDescendants()) do
+				destroy(r,v)
+			end
+		else
+			notify("Error","No destroy tool found.")
+		end
 	end
 end)
