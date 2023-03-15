@@ -4688,7 +4688,10 @@ CMDs[#CMDs + 1] = {NAME = 'unuse2022materials / un2022materials', DESC = 'Disabl
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'retroteleport', DESC = 'Teleports to a retro place via id.'}
 CMDs[#CMDs + 1] = {NAME = 'retroreturn', DESC = 'Teleports to retro menu.'}
+CMDs[#CMDs + 1] = {NAME = 'retrorejoin', DESC = 'Rejoins you to the same retro place.'}
 CMDs[#CMDs + 1] = {NAME = 'retroplaceid', DESC = 'Notifies retro place id.'}
+CMDs[#CMDs + 1] = {NAME = 'retrobanbypass', DESC = 'Bypasses a retrostudio ban (only if the ui does not load on join)'}
+
 
 wait()
 
@@ -12392,4 +12395,16 @@ addcmd("retroreturn",{},function(args,speaker)
 end)
 addcmd("retroplaceid",{},function(args,speaker)
 	notify("Retro place id",tostring(getretroplaceid()))
+end)
+addcmd("retrorejoin",{},function(args,speaker)
+	if getretroplace() == 1 then
+		notify("Rejoining","Rejoining via the menu.")
+		teleporttoplace(getretroplaceid())
+	end
+end)
+addcmd("retrobanbypass",{},function(args,speaker)
+	notify("Notification","Bypassing retro studio ban...")
+	for i,v in pairs(StarterGui:GetChildren()) do
+		v:Clone().Parent = PlayerGui
+	end
 end)
