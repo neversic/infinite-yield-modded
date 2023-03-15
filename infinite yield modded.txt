@@ -12381,8 +12381,9 @@ end
 
 
 addcmd("retroteleport",{},function(args,speaker)
-	local placeid = tonumber(args[1])
-	if placeid then
+	local placeid = args[1]
+	if typeof(placeid) == "string" then
+		notify("Teleporting","Teleporting you to ".. placeid .. " via the menu.")
 		teleporttoplace(placeid)
 	end
 end)
