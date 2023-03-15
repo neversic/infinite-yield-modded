@@ -12541,17 +12541,15 @@ function destroy(r,p)
 end
 addcmd("destroyparts",{},function(args)
 	if getretroplace() == 1 then
-		local clonetype = tonumber(args[1])
-		clonetype = math.clamp(math.floor(clonetype),0,2)
 		local tool = nil
 		local Player = Players.LocalPlayer
 		local char = Player.Character
 		local backpack = Player.Backpack
 		if char then
-			tool = char:FindFirstChild("Clone") or char:FindFirstChild("CloneTool")
+			tool = char:FindFirstChild("Destroy") or char:FindFirstChild("Hammer")
 		end
 		if not tool then
-			tool = backpack:FindFirstChild("Clone") or backpack:FindFirstChild("CloneTool")
+			tool = backpack:FindFirstChild("Destroy") or backpack:FindFirstChild("Hammer")
 		end
 		if tool then
 			local r = tool.MouseDown
