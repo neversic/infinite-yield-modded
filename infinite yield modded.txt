@@ -4690,7 +4690,8 @@ CMDs[#CMDs + 1] = {NAME = 'retroteleport', DESC = 'Teleports to a retro place vi
 CMDs[#CMDs + 1] = {NAME = 'retroreturn', DESC = 'Teleports to retro menu.'}
 CMDs[#CMDs + 1] = {NAME = 'retrorejoin', DESC = 'Rejoins you to the same retro place.'}
 CMDs[#CMDs + 1] = {NAME = 'retroplaceid', DESC = 'Notifies retro place id.'}
-CMDs[#CMDs + 1] = {NAME = 'retrobanbypass', DESC = 'Bypasses a retrostudio ban (only if the ui does not load on join)'}
+--CMDs[#CMDs + 1] = {NAME = 'retrobanbypass', DESC = 'Bypasses a retrostudio ban (only if the ui does not load on join)'} patched
+CMDs[#CMDs + 1] = {NAME = 'grabbloxycola', DESC = 'Grabs the specified amount of bloxy colas.'}
 
 
 wait()
@@ -12402,9 +12403,54 @@ addcmd("retrorejoin",{},function(args,speaker)
 		teleporttoplace(getretroplaceid())
 	end
 end)
-addcmd("retrobanbypass",{},function(args,speaker)
+--[[addcmd("retrobanbypass",{},function(args,speaker)
 	notify("Notification","Bypassing retro studio ban...")
 	for i,v in pairs(StarterGui:GetChildren()) do
 		v:Clone().Parent = PlayerGui
+	end
+end)]]
+function findvendingmachine()
+	for i,v in pairs(workspace:GetDescendants()) do
+		if v.ClassName == "Model" then
+			local clickdetector = v:FindFirstChild("ClickDetector")
+			local handlerscript = v:FindFirstChild("BloxyColaVendor")
+			if clickdetector and handlerscript and clickdetector.ClassName == "ClickDetector" and handlerscript.ClassName == "Script" then
+				return v,clickdetector
+			end
+		end
+	end
+end
+function grabcola(n)
+	local vendingmachine,clickdetector = findvendingmachine()
+	if clickdetector then
+		for i = 1,n do
+			spawn(function()
+				fireclickdetector(clickdetector)
+			end)
+		end
+		return true
+	end
+	return false
+end
+local toomuch = false
+addcmd("grabbloxycola",{"bloxycola"},function(args,speaker)
+	if getretroplace() == 1 then
+		local number = math.clamp(math.floor(tonumber(args[1]) or 1),1,math.huge)
+		if number > 1000 and not toomuch then
+			toomuch = true
+			notify("Warning","Grabbing more than 1000 bloxy colas may disconnect you from the game. Use this command again to proceed.")
+		else
+			
+			local notification1 = "Grabing "
+			local notification2 = " bloxy cola"
+			if number > 1 then
+				notification2 = notification2 .. "s"
+			end
+			local notification3 = notification1 .. tostring(number) .. notification2
+			notify("Notification",notification3)
+			if not grabcola(number) then
+				notify("Error","No vending machine found.")
+			end
+		end
 	end
 end)
