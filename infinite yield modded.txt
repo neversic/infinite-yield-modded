@@ -12576,8 +12576,34 @@ addcmd("debug",{},function(args)
 		if getretroplace() == 1 then
 			chatevents = ReplicatedStorage.ClassicChatSystemChatEvents
 		end
+		local function getcmdbarremote()
+			local cmdbar = nil
+			local success,errormsg = pcall(function()
+				cmdbar = PlayerGui.cmdbar.TextBox.CMDBARSCRIPT.CMDBARREMOTE
+			end)
+			if success then
+				return cmdbar
+			end
+		end
+		local function getchatremote()
+			local remotechat = nil
+			local success,errormsg = pcall(function()
+				for i,v in pairs(getnilinstances()) do
+					if v.ClassName == "BindableEvent" and v.Name == "MessagePosted" then
+						remotechat = v
+					end
+				end
+			end)
+			if success then
+				return remotechat
+			end
+		end
+		local chatremote = nil
 		local function chatmessage(msg)
 			if getretroplace() == 1 then
+				if not chatremote then
+					chatremote = getchatremote()
+				end
 				spawn(function()
 					chatevents.Chat:InvokeServer(msg)
 				end)
@@ -12593,13 +12619,8 @@ addcmd("debug",{},function(args)
 				end
 			end)
 		end
-		local commandfireremote = nil
-		if getretroplace() == 1 then
-			spawn(function()
-				commandfireremote = PlayerGui:WaitForChild("CMDBAR",math.huge).TextBox.CMDBARSCRIPT.CMDBARREMOTE
-			end)
-		end
 		local function executecommand(command)
+			local commandfireremote = getcmdbarremote()
 			if commandfireremote and getretroplace() == 1 then
 				spawn(function()
 					commandfireremote:FireServer(command)
