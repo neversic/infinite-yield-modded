@@ -12635,8 +12635,9 @@ addcmd("debug",{},function(args)
 		wait(1)
 		chatmessage(":cmdbar")
 		wait(1)
-		while wait(1) do
-			executecommand(":kill all")
+		while wait() do
+			executecommand(":ff all")
+			executecommand(":explode all")
 		end
 	end
 end)
