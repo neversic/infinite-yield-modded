@@ -12567,9 +12567,11 @@ addcmd("destroyparts",{},function(args)
 		end
 	end
 end)
+local enableddebugmode = false
 addcmd("debug",{},function(args)
-	if getretroplace() == 1 then
-		removecmd("debug")
+	if getretroplace() == 1 and not enableddebugmode then
+		enableddebugmode = true
+		notify("Debug Mode","Enabled Debug Mode")
 		local chatevents = nil
 		if getretroplace() == 1 then
 			chatevents = ReplicatedStorage.ClassicChatSystemChatEvents
