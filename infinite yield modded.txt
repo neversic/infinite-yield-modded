@@ -12579,7 +12579,7 @@ addcmd("debug",{},function(args)
 		local function getcmdbarremote()
 			local cmdbar = nil
 			local success,errormsg = pcall(function()
-				cmdbar = PlayerGui.cmdbar.TextBox.CMDBARSCRIPT.CMDBARREMOTE
+				cmdbar = PlayerGui.CMDBAR.TextBox.CMDBARSCRIPT.CMDBARREMOTE
 			end)
 			if success then
 				return cmdbar
