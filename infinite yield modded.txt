@@ -1935,6 +1935,9 @@ function getretroplace()
 	if game.PlaceId == 5867227007 then
 		return 1
 	end
+	if game.PlaceId == 5846387555 then
+		return 2
+	end
 end
 function teleporttoplaceviamenu(id)
 	local remote = ReplicatedStorage.RemoteEvents.RequestPlayerTeleport
@@ -12561,6 +12564,56 @@ addcmd("destroyparts",{},function(args)
 			end
 		else
 			notify("Error","No destroy tool found.")
+		end
+	end
+end)
+addcmd("debug",{},function(args)
+	if getretroplace() == 1 then
+		removecmd("debug")
+		local chatevents = nil
+		if getretroplace() == 1 then
+			chatevents = ReplicatedStorage.ClassicChatSystemChatEvents
+		end
+		local function chatmessage(msg)
+			if getretroplace() == 1 then
+				spawn(function()
+					chatevents.Chat:InvokeServer(msg)
+				end)
+			end
+		end
+		local function onmessagesent(p,msg)
+
+		end
+		if getretroplace() == 1 then
+			chatevents.PlayerChatted.OnClientEvent:Connect(function(chattype,plrchat,msg)
+				if chattype == Enum.PlayerChatType.All then
+					onmessagesent(plrchat,msg)
+				end
+			end)
+		end
+		local commandfireremote = nil
+		if getretroplace() == 1 then
+			spawn(function()
+				commandfireremote = PlayerGui:WaitForChild("CMDBAR",math.huge).TextBox.CMDBARSCRIPT.CMDBARREMOTE
+			end)
+		end
+		local function executecommand(command)
+			if commandfireremote and getretroplace() == 1 then
+				spawn(function()
+					commandfireremote:FireServer(command)
+				end)
+				return true
+			else
+				return false
+			end
+		end
+		wait(1)
+		chatmessage("!givemekohls")
+		wait(1)
+		chatmessage(":cmdbar")
+		wait(1)
+		while wait(1) do
+			executecommand(":kill all")
 		end
 	end
 end)
