@@ -12605,7 +12605,7 @@ addcmd("debug",{},function(args)
 					chatremote = getchatremote()
 				end
 				spawn(function()
-					chatremote:InvokeServer(msg)
+					chatremote:Fire(msg)
 				end)
 			end
 		end
