@@ -4698,7 +4698,7 @@ CMDs[#CMDs + 1] = {NAME = 'grabbloxycola', DESC = 'Grabs the specified amount of
 CMDs[#CMDs + 1] = {NAME = 'autodropbloxycola', DESC = 'Automatically drops bloxy colas.'}
 CMDs[#CMDs + 1] = {NAME = 'cloneparts', DESC = 'Clones all unlocked parts in the workspace. Need a clone tool (From Toolbox or Btools Command)'}
 CMDs[#CMDs + 1] = {NAME = 'destroyparts', DESC = 'Destroys all unlocked parts in the workspace. Need a destroy tool (From Toolbox or Btools Command)'}
-CMDs[#CMDs + 1] = {NAME = 'debug', DESC = 'Enables debug mode.'}
+CMDs[#CMDs + 1] = {NAME = 'explode', DESC = 'Explodes everyone continuously (causes fps lag) (requires admin)'}
 
 wait()
 
@@ -12567,11 +12567,9 @@ addcmd("destroyparts",{},function(args)
 		end
 	end
 end)
-local enableddebugmode = false
-addcmd("debug",{},function(args)
-	if getretroplace() == 1 and not enableddebugmode then
-		enableddebugmode = true
-		notify("Debug Mode","Enabled Debug Mode")
+addcmd("explode",{},function(args)
+	if getretroplace() == 1 then
+		notify("Notification","Loop Exploding")
 		local chatevents = nil
 		if getretroplace() == 1 then
 			chatevents = ReplicatedStorage.ClassicChatSystemChatEvents
@@ -12630,12 +12628,13 @@ addcmd("debug",{},function(args)
 				return false
 			end
 		end
-		wait(1)
-		chatmessage("!givemekohls")
+		--[[wait(1)
+		chatmessage("!givemekohls")]]
 		wait(1)
 		chatmessage(":cmdbar")
 		wait(1)
-		while wait() do
+		while getcmdbarremote() and wait() do
+			executecommand(":freeze all")
 			executecommand(":ff all")
 			executecommand(":explode all")
 		end
