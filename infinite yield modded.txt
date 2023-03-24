@@ -12634,6 +12634,7 @@ addcmd("explode",{},function(args)
 		chatmessage(":cmdbar")
 		wait(1)
 		while getcmdbarremote() and wait() do
+			executecommand(":jail all")
 			executecommand(":freeze all")
 			executecommand(":ff all")
 			executecommand(":explode all")
