@@ -12671,6 +12671,7 @@ addcmd("adminesp",{},function(args)
 					adminespdata[v.UserId] = COREGUI:FindFirstChild(v.Name .. "_ESP")
 				end
 			end
+			wait()
 		end
 	end
 end)
