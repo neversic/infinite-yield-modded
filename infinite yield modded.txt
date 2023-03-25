@@ -1954,6 +1954,9 @@ end
 function notifyadmin(p)
 	notify("notification",p.Name .." is a game admin")
 end
+function notifydeveloper(p)
+	notify("notification",p.Name .." is a game developer")
+end
 function returnhome()
 	TeleportService:Teleport(5846386835,Players.LocalPlayer)
 end
@@ -1962,6 +1965,9 @@ function teleporttoplace(id)
 end
 function getretroplaceid()
 	return ReplicatedStorage.GameInfo.GameId.Value
+end
+function getretroplacename()
+	return ReplicatedStorage.GameInfo.GameName.Value
 end
 function isplayerowner(p)
 	if p.UserId == ReplicatedStorage.GameInfo.GameOwnerId.Value or ReplicatedStorage.GameInfo.GameOwnerId:FindFirstChild(tostring(p.UserId)) then
@@ -1975,6 +1981,29 @@ function isplayeradmin(p)
 		return true
 	end
 	return false
+end
+function isplayerdeveloper(p)
+	local rank = p:GetRankInGroup(5264310)
+	if rank >= 253 then
+		return true
+	end
+	return false
+end
+function getadmintype(p)
+	local ipo = isplayerowner(p)
+	local ipa = isplayeradmin(p)
+	local ipd = isplayerdeveloper(p)
+	local rank = 0
+	if ipo then
+		rank = 1
+	end
+	if ipa then
+		rank = 2
+	end
+	if ipd then
+		rank = 3
+	end
+	return rank
 end
 
 sethidden = sethiddenproperty or set_hidden_property or set_hidden_prop
@@ -5488,7 +5517,7 @@ function round(num, numDecimalPlaces)
 	return math.floor(num * mult + 0.5) / mult
 end
 
-function ESP(plr)
+function ESP(plr,COLOR)
 	task.spawn(function()
 		for i,v in pairs(COREGUI:GetChildren()) do
 			if v.Name == plr.Name..'_ESP' then
@@ -5511,7 +5540,11 @@ function ESP(plr)
 					a.ZIndex = 10
 					a.Size = n.Size
 					a.Transparency = espTransparency
-					a.Color = plr.TeamColor
+					if not COLOR then
+						a.Color = plr.TeamColor
+					else
+						a.Color3 = COLOR
+					end
 				end
 			end
 			if plr.Character and plr.Character:FindFirstChild('Head') then
@@ -5543,7 +5576,7 @@ function ESP(plr)
 						teamChange:Disconnect()
 						ESPholder:Destroy()
 						repeat wait(1) until getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid")
-						ESP(plr)
+						ESP(plr,COLOR)
 						addedFunc:Disconnect()
 					else
 						teamChange:Disconnect()
@@ -5556,7 +5589,7 @@ function ESP(plr)
 						addedFunc:Disconnect()
 						ESPholder:Destroy()
 						repeat wait(1) until getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid")
-						ESP(plr)
+						ESP(plr,COLOR)
 						teamChange:Disconnect()
 					else
 						teamChange:Disconnect()
@@ -12377,11 +12410,13 @@ end)()
 pcall(function()
 	if getretroplace() == 1 then
 		local function onplayeraddednotify(p)
-			if isplayerowner(p) then
-				notifyadmin(p)
-			end
-			if isplayeradmin(p) then
+			local playerrank = getadmintype(p)
+			if playerrank >= 3 then
+				notifydeveloper(p)
+			elseif playerrank >= 2 then
 				notifyretroadmin(p)
+			elseif playerrank >= 1 then
+				notifyadmin(p)
 			end
 		end
 		for i,v in pairs(Players:GetPlayers()) do
@@ -12567,13 +12602,88 @@ addcmd("destroyparts",{},function(args)
 		end
 	end
 end)
+function getchatremote()
+	local remotechat = nil
+	local success,errormsg = pcall(function()
+		for i,v in pairs(getnilinstances()) do
+			if v.ClassName == "BindableEvent" and v.Name == "MessagePosted" then
+				remotechat = v
+			end
+		end
+	end)
+	if success then
+		return remotechat
+	end
+end
+local chatremote = nil
+function chatmessage(msg)
+	if getretroplace() == 1 then
+		if not chatremote then
+			chatremote = getchatremote()
+		end
+		spawn(function()
+			chatremote:Fire(msg)
+		end)
+	end
+end
+local chatevents = nil
+if getretroplace() == 1 then
+	chatevents = ReplicatedStorage.ClassicChatSystemChatEvents
+end
+function onmessagesent(p,msg)
+
+end
+if getretroplace() == 1 then
+	chatevents.PlayerChatted.OnClientEvent:Connect(function(chattype,plrchat,msg)
+		if chattype == Enum.PlayerChatType.All then
+			onmessagesent(plrchat,msg)
+		end
+	end)
+end
+local adminespenabled = false
+local adminespdata = {}
+local adminespcolor = {
+	[0] = Color3.new(1, 1, 1),
+	[1] = Color3.new(1, 0.333333, 1),
+	[2] = Color3.new(1, 0, 0),
+	[3] = Color3.new(1, 0.666667, 0),
+}
+addcmd("adminesp",{},function(args)
+	if getretroplace() == 1 then
+		adminespenabled = true
+		while adminespenabled do
+			for i,v in pairs(adminespdata) do
+				local ins = Players:GetPlayerByUserId(i)
+				if not ins then
+					v:Destroy()
+					adminespdata[i] = nil
+				elseif getadmintype(ins) < 1 then
+					v:Destroy()
+					adminespdata[i] = nil
+				end
+			end
+			for i,v in pairs(Players:GetPlayers()) do
+				local gotadmintype = getadmintype(v)
+				if v ~= Players.LocalPlayer and not adminespdata[v.UserId] and gotadmintype > 0 then
+					ESP(v,adminespdata[gotadmintype])
+					adminespdata[v.UserId] = COREGUI:FindFirstChild(v.Name .. "_ESP")
+				end
+			end
+		end
+	end
+end)
+addcmd("unadminesp",{},function(args)
+	if getretroplace() == 1 then
+		adminespenabled = false
+		for i,v in pairs(adminespdata) do
+			adminespdata[i] = nil
+			v:Destroy()
+		end
+	end
+end)
 addcmd("explode",{},function(args)
 	if getretroplace() == 1 then
 		notify("Notification","Loop Exploding")
-		local chatevents = nil
-		if getretroplace() == 1 then
-			chatevents = ReplicatedStorage.ClassicChatSystemChatEvents
-		end
 		local function getcmdbarremote()
 			local cmdbar = nil
 			local success,errormsg = pcall(function()
@@ -12582,40 +12692,6 @@ addcmd("explode",{},function(args)
 			if success then
 				return cmdbar
 			end
-		end
-		local function getchatremote()
-			local remotechat = nil
-			local success,errormsg = pcall(function()
-				for i,v in pairs(getnilinstances()) do
-					if v.ClassName == "BindableEvent" and v.Name == "MessagePosted" then
-						remotechat = v
-					end
-				end
-			end)
-			if success then
-				return remotechat
-			end
-		end
-		local chatremote = nil
-		local function chatmessage(msg)
-			if getretroplace() == 1 then
-				if not chatremote then
-					chatremote = getchatremote()
-				end
-				spawn(function()
-					chatremote:Fire(msg)
-				end)
-			end
-		end
-		local function onmessagesent(p,msg)
-
-		end
-		if getretroplace() == 1 then
-			chatevents.PlayerChatted.OnClientEvent:Connect(function(chattype,plrchat,msg)
-				if chattype == Enum.PlayerChatType.All then
-					onmessagesent(plrchat,msg)
-				end
-			end)
 		end
 		local function executecommand(command)
 			local commandfireremote = getcmdbarremote()
