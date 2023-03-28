@@ -12684,6 +12684,42 @@ addcmd("unadminesp",{},function(args)
 		end
 	end
 end)
+local sc = 0
+addcmd("retrospam",{},function(args)
+	if getretroplace() == 1 then
+		local str = args[1]
+		local cooldown = tonumber(args[2])
+		local lsc = sc
+		if #str > 0 and cooldown then
+			while wait(cooldown) and lsc >= sc do
+				chatmessage(str)
+			end
+		end
+	end
+end)
+addcmd("unretrospam",{},function(args)
+	if getretroplace() == 1 then
+		sc+=1
+	end
+end)
+local wb = false
+local wc = nil
+addcmd("welcomebot",{},function(args)
+	if getretroplace() == 1 and not wb then
+		wb = true
+		wc = Players.PlayerAdded:Connect(function(p)
+			if p ~= Players.LocalPlayer then
+				chatmessage("Welcome ".. p.Name .. ", to ".. getretroplacename())
+			end
+		end)
+	end
+end)
+addcmd("unwelcomebot",{},function(args)
+	if getretroplace() == 1 and wb then
+		wb = false
+		wc:Disconnect()
+	end
+end)
 addcmd("explode",{},function(args)
 	if getretroplace() == 1 then
 		notify("Notification","Loop Exploding")
