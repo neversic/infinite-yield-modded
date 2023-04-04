@@ -4734,6 +4734,7 @@ CMDs[#CMDs + 1] = {NAME = 'retrospam', DESC = 'Spam in the retrostudio chat.'}
 CMDs[#CMDs + 1] = {NAME = 'unretrospam', DESC = 'Disables retrospam'}
 CMDs[#CMDs + 1] = {NAME = 'welcomebot', DESC = 'Welcomes anyone who joins.'}
 CMDs[#CMDs + 1] = {NAME = 'unretrospam', DESC = 'Disables welcomebot'}
+CMDs[#CMDs + 1] = {NAME = 'spamcountdown', DESC = 'Spams the :countdown command.'}
 
 wait()
 
@@ -12691,8 +12692,8 @@ end)
 local sc = 0
 addcmd("retrospam",{},function(args)
 	if getretroplace() == 1 then
-		local str = args[1]
-		local cooldown = tonumber(args[2])
+		local str = getstring(2)
+		local cooldown = tonumber(args[1])
 		local lsc = sc
 		if #str > 0 and cooldown then
 			while wait(cooldown) and lsc >= sc do
@@ -12757,6 +12758,41 @@ addcmd("explode",{},function(args)
 			executecommand(":freeze all")
 			executecommand(":ff all")
 			executecommand(":explode all")
+		end
+	end
+end)
+addcmd("spamcountdown",{},function(args)
+	if getretroplace() == 1 then
+		notify("Notification","Spaming countdowns")
+		local function getcmdbarremote()
+			local cmdbar = nil
+			local success,errormsg = pcall(function()
+				cmdbar = PlayerGui.CMDBAR.TextBox.CMDBARSCRIPT.CMDBARREMOTE
+			end)
+			if success then
+				return cmdbar
+			end
+		end
+		local function executecommand(command)
+			local commandfireremote = getcmdbarremote()
+			if commandfireremote and getretroplace() == 1 then
+				spawn(function()
+					commandfireremote:FireServer(command)
+				end)
+				return true
+			else
+				return false
+			end
+		end
+		--[[wait(1)
+		chatmessage("!givemekohls")]]
+		wait(1)
+		chatmessage(":cmdbar")
+		wait(1)
+		while getcmdbarremote() and wait() do
+			for i = 1,5 do
+				executecommand(":countdown 100")
+			end
 		end
 	end
 end)
