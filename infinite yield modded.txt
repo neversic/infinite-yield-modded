@@ -12829,8 +12829,8 @@ end)
 function tp(id)
 	queueteleport("getgenv().autoteleport = \"".. id .. "\"")
 	if getretroplace() == 1 then
-		TeleportService:Teleport(Players.LocalPlayer,game.PlaceId)
-		else
+		TeleportService:Teleport(game.PlaceId,Players.LocalPlayer)
+	else
 		teleporttoplaceviamenu(id)
 	end
 end
