@@ -11022,8 +11022,9 @@ addcmd('touchinterests', {'touchinterest', 'firetouchinterests', 'firetouchinter
 					wait()
 					firetouchinterest(x, root, 0)
 				end)
+			else
+				x.CFrame = root.CFrame
 			end
-			x.CFrame = root.CFrame
 		end
 	end
 
@@ -12652,6 +12653,134 @@ if getretroplace() == 1 then
 		end
 	end)
 end
+
+function getparent()
+	local parent = PlayerGui
+	pcall(function()
+		local cg = game:GetService("CoreGui")
+		cg:WaitForChild("RobloxGui")
+		parent = cg
+	end)
+	return parent
+end
+function destroyline(got)
+	if typeof(got) == "userdata" then
+		got.Stop = true
+	else
+		error("Expected ':' not '.' calling member function Destroy")
+	end
+end
+function makeline()
+	local sg = Instance.new("ScreenGui")
+	local fr = Instance.new("Frame")
+	sg.ResetOnSpawn = false
+	sg.IgnoreGuiInset = true
+	sg.DisplayOrder = 5
+	sg.Name = HttpService:GenerateGUID(false)
+	fr.Name = HttpService:GenerateGUID(false)
+	fr.BorderSizePixel = 0
+	fr.AnchorPoint = Vector2.new(0.5,0.5)
+	fr.Parent = sg
+	sg.Parent = getparent()
+	local properties = {
+		Name = "Line",
+		Thickness = 1,
+		Transparency = 0,
+		Color = Color3.new(1,0,0),
+		From = Vector2.new(0,0),
+		To = Vector2.new(0,0),
+		Visible = true,
+		Stop = false,
+		Destroy = destroyline,
+	}
+	local lockproperties = {
+		["Destroy"] = true,
+	}
+	local Destroyed = false
+	local function update()
+		if Destroyed then
+			return
+		end
+		local topos = properties.To
+		local halffrompos = properties.From
+		local averageposition = Vector2.new((halffrompos.X+topos.X)/2,(halffrompos.Y+topos.Y)/2)
+		local sub = halffrompos-topos
+		local dis = sub.Magnitude
+		fr.Position = UDim2.new(0,averageposition.X,0,averageposition.Y)
+		fr.Size = UDim2.new(0,dis,0,properties.Thickness)
+		local ypercent = math.deg(math.atan(sub.Y/sub.X))
+		fr.Rotation = ypercent
+		fr.BackgroundColor3 = properties.Color
+		fr.Transparency = properties.Transparency
+		fr.Visible = properties.Visible
+		if properties.Stop then
+			Destroyed = true
+			fr:Destroy()
+			sg:Destroy()
+			sg = nil
+			fr = nil
+		end
+	end
+	local userdata = newproxy(true)
+	local metatable = getmetatable(userdata)
+
+	update()
+
+	metatable.__index = function(_,p)
+		local got = properties[p]
+		if got == nil then
+			error(p .. " is not a valid member of Line \"" .. properties.Name .. "\"")
+		end
+		return got
+	end
+	metatable.__newindex = function(_,p,v)
+		local got = properties[p]
+		if got == nil then
+			error(p .. " is not a valid member of Line \"" .. properties.Name .. "\"")
+		end
+		if lockproperties[p] then
+			error("Unabled to assign property ".. p .. ". Property is read only")
+		end
+		if typeof(got) ~= typeof(v) then
+			error("Unable to assign property ".. p .. ". ".. typeof(got) .." expected, got ".. typeof(v))
+		end
+		properties[p] = v
+		update()
+	end
+	metatable.__metatable = "The metatable is locked"
+	return userdata
+end
+
+function esptopart(part,color)
+	local line = makeline()
+	line.Color = color
+	local connection = nil
+	local stopfunc = function()
+		connection:Disconnect()
+		line:Destroy()
+	end
+	connection = RunService.RenderStepped:Connect(function()
+		local camera = workspace.CurrentCamera
+		local mouse = IYMouse
+		if not part then
+			stopfunc()
+			return
+		end
+		local point,visible = camera:WorldToViewportPoint(part.Position)
+		if visible and part:IsDescendantOf(workspace) then
+			line.Visible = true
+			--local mid = Vector2.new(camera.ViewportSize.X/2,camera.ViewportSize.Y/2)
+			local mid = Vector2.new(mouse.X,mouse.Y+36)
+			local pointfix = Vector2.new(point.X,point.Y)
+			line.From = mid
+			line.To = pointfix
+		else
+			line.Visible = false
+		end
+	end)
+
+	return stopfunc
+end
 local adminespenabled = false
 local adminespdata = {}
 local adminespcolor = {
@@ -12660,6 +12789,25 @@ local adminespcolor = {
 	[2] = Color3.new(1, 0, 0),
 	[3] = Color3.new(1, 0.666667, 0),
 }
+
+function giveplayertracers(p,color)
+	local character = p.Character or p.CharacterAdded:Wait()
+	local stopcurrent = nil
+	local function charadded(char)
+		stopcurrent = esptopart(char:WaitForChild("Head"),color)
+	end
+	charadded(character)
+	local connection = nil
+	local function stopit()
+		connection:Disconnect()
+		if stopcurrent then
+			stopcurrent()
+		end
+	end
+	connection = p.CharacterAdded:Connect(charadded)
+	return stopit
+end
+
 addcmd("adminesp",{},function(args)
 	if getretroplace() == 1 then
 		adminespenabled = true
@@ -12667,18 +12815,17 @@ addcmd("adminesp",{},function(args)
 			for i,v in pairs(adminespdata) do
 				local ins = Players:GetPlayerByUserId(i)
 				if not ins then
-					v:Destroy()
+					v()
 					adminespdata[i] = nil
 				elseif getadmintype(ins) < 1 then
-					v:Destroy()
+					v()
 					adminespdata[i] = nil
 				end
 			end
 			for i,v in pairs(Players:GetPlayers()) do
 				local gotadmintype = getadmintype(v)
 				if v ~= Players.LocalPlayer and not adminespdata[v.UserId] and gotadmintype > 0 then
-					ESP(v,adminespdata[gotadmintype])
-					adminespdata[v.UserId] = COREGUI:FindFirstChild(v.Name .. "_ESP")
+					adminespdata[v.UserId] = giveplayertracers(v,adminespcolor[gotadmintype])
 				end
 			end
 			wait()
@@ -12690,7 +12837,7 @@ addcmd("unadminesp",{},function(args)
 		adminespenabled = false
 		for i,v in pairs(adminespdata) do
 			adminespdata[i] = nil
-			v:Destroy()
+			v()
 		end
 	end
 end)
@@ -12719,7 +12866,14 @@ addcmd("welcomebot",{},function(args)
 		wb = true
 		wc = Players.PlayerAdded:Connect(function(p)
 			if p ~= Players.LocalPlayer then
-				chatmessage("Welcome ".. p.Name .. ", to ".. getretroplacename())
+				local rng = math.random()
+				if rng >= 2/3 then
+					chatmessage("Welcome ".. p.Name .. ", to ".. getretroplacename())
+				elseif rng >= 1/3 then
+					chatmessage("Hello ".. p.Name .. ", welcome to ".. getretroplacename())
+				else
+					chatmessage("Greetings ".. p.Name .. ", welcome to ".. getretroplacename())
+				end
 			end
 		end)
 	end
@@ -12733,6 +12887,9 @@ end)
 addcmd("explode",{},function(args)
 	if getretroplace() == 1 then
 		notify("Notification","Loop Exploding")
+		local mode = tonumber(args[1]) or 0
+		mode = math.round(mode)
+		mode = math.clamp(mode,0,1)
 		local function getcmdbarremote()
 			local cmdbar = nil
 			local success,errormsg = pcall(function()
@@ -12763,6 +12920,9 @@ addcmd("explode",{},function(args)
 			executecommand(":freeze all")
 			executecommand(":ff all")
 			executecommand(":explode all")
+			if mode == 1 then
+				executecommand(":countdown 100")
+			end
 		end
 	end
 end)
