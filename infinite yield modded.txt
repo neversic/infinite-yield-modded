@@ -9,7 +9,7 @@ if not hasfilesystem then
 	end
 end
 local source = game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source')
-source = source:gsub("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source","https://raw.githubusercontent.com/neversic/infinite-yield-modded/main/infinite%20yield%20modded.txt")
+source = source:gsub("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source","https://raw.githubusercontent.com/neversic/infinite-yield-modded/main/infinite%%20yield%%20modded.txt")
 local env = loadstring(source .. "\nreturn getfenv()")()
 local notify,addcmd,execCmd,addcmdtext,getstring,getRoot = env.notify,env.addcmd,env.execCmd,env.addcmdtext,env.getstring,env.getRoot
 local CMDs = {}
